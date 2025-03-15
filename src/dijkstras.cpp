@@ -36,7 +36,7 @@ vector<int> dijkstra_shortest_path(const Graph& G, int source, vector<int>& prev
 vector<int> extract_shortest_path(const vector<int>& distances, 
                                 const vector<int>& previous, 
                                 int destination) {
-    (void)distances; // Suppress unused parameter warning
+    (void)distances;
     vector<int> path;
     int current = destination;
     

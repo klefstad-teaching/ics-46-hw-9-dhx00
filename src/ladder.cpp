@@ -7,21 +7,20 @@ void error(string word1, string word2, string msg) {
 bool edit_distance_within(const string& str1, const string& str2, int d) {
     int len1 = str1.length(), len2 = str2.length();
     
-    if (abs(len1 - len2) > d) return false; // If length difference exceeds d, return false.
+    if (abs(len1 - len2) > d) return false;
 
     int diff_count = 0, i = 0, j = 0;
 
-    // Compare both strings character by character
     while (i < len1 && j < len2) {
         if (str1[i] != str2[j]) {
             diff_count++;
             if (diff_count > d) return false;
             
-            if (len1 > len2) { // str1 has an extra char
+            if (len1 > len2) {
                 i++;
-            } else if (len1 < len2) { // str2 has an extra char
+            } else if (len1 < len2) {
                 j++;
-            } else { // Replace case
+            } else {
                 i++; j++;
             }
         } else {
@@ -29,7 +28,6 @@ bool edit_distance_within(const string& str1, const string& str2, int d) {
         }
     }
 
-    // Account for any extra character left at the end
     if (i < len1 || j < len2) diff_count++;
 
     return diff_count <= d;
@@ -64,7 +62,7 @@ vector<string> generate_word_ladder(const string& begin_word,
 
     while (!ladder_queue.empty()) {
         int queue_size = ladder_queue.size();
-        set<string> words_to_mark; // Track words to mark at the end of this level
+        set<string> words_to_mark;
 
         for (int i = 0; i < queue_size; i++) {
             vector<string> ladder = ladder_queue.front();
@@ -79,7 +77,7 @@ vector<string> generate_word_ladder(const string& begin_word,
                     if (word == end_lower) return new_ladder;
                     
                     ladder_queue.push(new_ladder);
-                    words_to_mark.insert(word); // Delay marking visited
+                    words_to_mark.insert(word);
                 }
             }
         }
@@ -107,6 +105,8 @@ void print_word_ladder(const vector<string>& ladder) {
         cout << "No word ladder found.\n";
         return;
     }
+    
+    cout << "Word ladder found: ";
     for (size_t i = 0; i < ladder.size(); ++i) {
         cout << ladder[i];
         if (i < ladder.size() - 1) cout << " ";
