@@ -6,22 +6,33 @@ void error(string word1, string word2, string msg) {
 
 bool edit_distance_within(const string& str1, const string& str2, int d) {
     int len1 = str1.length(), len2 = str2.length();
-    if (abs(len1 - len2) > d) return false;
     
-    vector<vector<int>> dp(len1 + 1, vector<int>(len2 + 1, 0));
-    for (int i = 0; i <= len1; ++i) dp[i][0] = i;
-    for (int j = 0; j <= len2; ++j) dp[0][j] = j;
-    
-    for (int i = 1; i <= len1; ++i) {
-        for (int j = 1; j <= len2; ++j) {
-            if (str1[i-1] == str2[j-1]) {
-                dp[i][j] = dp[i-1][j-1];
-            } else {
-                dp[i][j] = min({dp[i-1][j-1], dp[i-1][j], dp[i][j-1]}) + 1;
+    if (abs(len1 - len2) > d) return false; // If length difference exceeds d, return false.
+
+    int diff_count = 0, i = 0, j = 0;
+
+    // Compare both strings character by character
+    while (i < len1 && j < len2) {
+        if (str1[i] != str2[j]) {
+            diff_count++;
+            if (diff_count > d) return false;
+            
+            if (len1 > len2) { // str1 has an extra char
+                i++;
+            } else if (len1 < len2) { // str2 has an extra char
+                j++;
+            } else { // Replace case
+                i++; j++;
             }
+        } else {
+            i++; j++;
         }
     }
-    return dp[len1][len2] <= d;
+
+    // Account for any extra character left at the end
+    if (i < len1 || j < len2) diff_count++;
+
+    return diff_count <= d;
 }
 
 bool is_adjacent(const string& word1, const string& word2) {
@@ -29,47 +40,50 @@ bool is_adjacent(const string& word1, const string& word2) {
 }
 
 vector<string> generate_word_ladder(const string& begin_word, 
-                                  const string& end_word, 
-                                  const set<string>& word_list) {
+                                    const string& end_word, 
+                                    const set<string>& word_list) {
     string begin_lower = begin_word;
     string end_lower = end_word;
     for (char& c : begin_lower) c = tolower(c);
     for (char& c : end_lower) c = tolower(c);
-    
+
     if (begin_lower == end_lower) {
         error(begin_word, end_word, "Start and end words must be different");
         return {};
     }
-    
+
     if (word_list.find(end_lower) == word_list.end()) {
         error(begin_word, end_word, "End word not in dictionary");
         return {};
     }
-    
+
     queue<vector<string>> ladder_queue;
     set<string> visited;
     
     ladder_queue.push({begin_lower});
-    visited.insert(begin_lower);
-    
+
     while (!ladder_queue.empty()) {
-        vector<string> ladder = ladder_queue.front();
-        ladder_queue.pop();
-        
-        string last_word = ladder.back();
-        
-        for (const string& word : word_list) {
-            if (is_adjacent(last_word, word) && visited.find(word) == visited.end()) {
-                visited.insert(word);
-                vector<string> new_ladder = ladder;
-                new_ladder.push_back(word);
-                
-                if (word == end_lower) {
-                    return new_ladder;
+        int queue_size = ladder_queue.size();
+        set<string> words_to_mark; // Track words to mark at the end of this level
+
+        for (int i = 0; i < queue_size; i++) {
+            vector<string> ladder = ladder_queue.front();
+            ladder_queue.pop();
+            string last_word = ladder.back();
+
+            for (const string& word : word_list) {
+                if (is_adjacent(last_word, word) && visited.find(word) == visited.end()) {
+                    vector<string> new_ladder = ladder;
+                    new_ladder.push_back(word);
+
+                    if (word == end_lower) return new_ladder;
+                    
+                    ladder_queue.push(new_ladder);
+                    words_to_mark.insert(word); // Delay marking visited
                 }
-                ladder_queue.push(new_ladder);
             }
         }
+        visited.insert(words_to_mark.begin(), words_to_mark.end());
     }
     return {};
 }
@@ -93,12 +107,11 @@ void print_word_ladder(const vector<string>& ladder) {
         cout << "No word ladder found.\n";
         return;
     }
-    cout << "Word ladder found: ";
     for (size_t i = 0; i < ladder.size(); ++i) {
         cout << ladder[i];
         if (i < ladder.size() - 1) cout << " ";
     }
-    cout << " \n";
+    cout << "\n";
 }
 
 void verify_word_ladder() {
