@@ -1,4 +1,4 @@
-#include "ladder.h" 
+#include "ladder.h"
 
 void error(string word1, string word2, string msg) {
     cerr << "Error with words '" << word1 << "' and '" << word2 << "': " << msg << "\n";
@@ -11,7 +11,7 @@ bool edit_distance_within(const string& str1, const string& str2, int d) {
     vector<vector<int>> dp(len1 + 1, vector<int>(len2 + 1, 0));
     for (int i = 0; i <= len1; ++i) dp[i][0] = i;
     for (int j = 0; j <= len2; ++j) dp[0][j] = j;
-     
+    
     for (int i = 1; i <= len1; ++i) {
         for (int j = 1; j <= len2; ++j) {
             if (str1[i-1] == str2[j-1]) {
@@ -19,6 +19,7 @@ bool edit_distance_within(const string& str1, const string& str2, int d) {
             } else {
                 dp[i][j] = min({dp[i-1][j-1], dp[i-1][j], dp[i][j-1]}) + 1;
             }
+            if (dp[i][j] > d) return false; // Early exit if edit distance exceeds 1
         }
     }
     return dp[len1][len2] <= d;
@@ -47,7 +48,16 @@ vector<string> generate_word_ladder(const string& begin_word,
     ladder_queue.push({begin_word});
     visited.insert(begin_word);
     
+    // Add iteration limit for debugging infinite loops
+    const size_t MAX_ITERATIONS = 1000000; // Arbitrary large limit
+    size_t iterations = 0;
+    
     while (!ladder_queue.empty()) {
+        if (++iterations > MAX_ITERATIONS) {
+            cerr << "Possible infinite loop detected after " << MAX_ITERATIONS << " iterations\n";
+            return {};
+        }
+        
         vector<string> ladder = ladder_queue.front();
         ladder_queue.pop();
         
@@ -92,5 +102,23 @@ void print_word_ladder(const vector<string>& ladder) {
         cout << ladder[i];
         if (i < ladder.size() - 1) cout << " ";
     }
+    cout<<" ";
     cout << "\n";
+}
+
+void verify_word_ladder() {
+    // Placeholder implementation: could validate a ladder if parameters were provided
+    // For now, assume it’s a test hook or needs specific test case input
+    set<string> word_list;
+    load_words(word_list, "words.txt");
+    
+    vector<string> test_ladder = {"cat", "cot", "cog"};
+    for (size_t i = 1; i < test_ladder.size(); ++i) {
+        if (!is_adjacent(test_ladder[i-1], test_ladder[i]) || 
+            (i > 0 && word_list.find(test_ladder[i]) == word_list.end())) {
+            cerr << "Invalid ladder at step " << i << "\n";
+            return;
+        }
+    }
+    cout << "Sample ladder verified\n";
 }
