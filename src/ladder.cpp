@@ -19,7 +19,7 @@ bool edit_distance_within(const string& str1, const string& str2, int d) {
             } else {
                 dp[i][j] = min({dp[i-1][j-1], dp[i-1][j], dp[i][j-1]}) + 1;
             }
-            if (dp[i][j] > d) return false; // Early exit if edit distance exceeds 1
+            if (dp[i][j] > d) return false;
         }
     }
     return dp[len1][len2] <= d;
@@ -32,12 +32,17 @@ bool is_adjacent(const string& word1, const string& word2) {
 vector<string> generate_word_ladder(const string& begin_word, 
                                   const string& end_word, 
                                   const set<string>& word_list) {
-    if (begin_word == end_word) {
+    string begin_lower = begin_word;
+    string end_lower = end_word;
+    for (char& c : begin_lower) c = tolower(c);
+    for (char& c : end_lower) c = tolower(c);
+    
+    if (begin_lower == end_lower) {
         error(begin_word, end_word, "Start and end words must be different");
         return {};
     }
     
-    if (word_list.find(end_word) == word_list.end()) {
+    if (word_list.find(end_lower) == word_list.end()) {
         error(begin_word, end_word, "End word not in dictionary");
         return {};
     }
@@ -45,19 +50,10 @@ vector<string> generate_word_ladder(const string& begin_word,
     queue<vector<string>> ladder_queue;
     set<string> visited;
     
-    ladder_queue.push({begin_word});
-    visited.insert(begin_word);
-    
-    // Add iteration limit for debugging infinite loops
-    const size_t MAX_ITERATIONS = 1000000; // Arbitrary large limit
-    size_t iterations = 0;
+    ladder_queue.push({begin_lower});
+    visited.insert(begin_lower);
     
     while (!ladder_queue.empty()) {
-        if (++iterations > MAX_ITERATIONS) {
-            cerr << "Possible infinite loop detected after " << MAX_ITERATIONS << " iterations\n";
-            return {};
-        }
-        
         vector<string> ladder = ladder_queue.front();
         ladder_queue.pop();
         
@@ -69,7 +65,7 @@ vector<string> generate_word_ladder(const string& begin_word,
                 vector<string> new_ladder = ladder;
                 new_ladder.push_back(word);
                 
-                if (word == end_word) {
+                if (word == end_lower) {
                     return new_ladder;
                 }
                 ladder_queue.push(new_ladder);
@@ -102,23 +98,13 @@ void print_word_ladder(const vector<string>& ladder) {
         cout << ladder[i];
         if (i < ladder.size() - 1) cout << " ";
     }
-    cout<<" ";
+    cout << " ";
     cout << "\n";
 }
 
 void verify_word_ladder() {
-    // Placeholder implementation: could validate a ladder if parameters were provided
-    // For now, assume it’s a test hook or needs specific test case input
     set<string> word_list;
     load_words(word_list, "words.txt");
-    
-    vector<string> test_ladder = {"cat", "cot", "cog"};
-    for (size_t i = 1; i < test_ladder.size(); ++i) {
-        if (!is_adjacent(test_ladder[i-1], test_ladder[i]) || 
-            (i > 0 && word_list.find(test_ladder[i]) == word_list.end())) {
-            cerr << "Invalid ladder at step " << i << "\n";
-            return;
-        }
-    }
-    cout << "Sample ladder verified\n";
+    vector<string> ladder = generate_word_ladder("cat", "dog", word_list);
+    print_word_ladder(ladder);
 }
