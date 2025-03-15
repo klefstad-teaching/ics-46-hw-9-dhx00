@@ -66,7 +66,7 @@ vector<string> generate_word_ladder(const string& begin_word,
             }
         }
     }
-    return {}; // No ladder found
+    return {};
 }
 
 void load_words(set<string>& word_list, const string& file_name) {
@@ -93,28 +93,4 @@ void print_word_ladder(const vector<string>& ladder) {
         if (i < ladder.size() - 1) cout << " -> ";
     }
     cout << "\n";
-}
-
-int main() {
-    set<string> word_list;
-    try {
-        load_words(word_list, "words.txt");
-    } catch (const runtime_error& e) {
-        cerr << e.what() << "\n";
-        return 1;
-    }
-    
-    string begin_word, end_word;
-    cout << "Enter start word: ";
-    cin >> begin_word;
-    cout << "Enter end word: ";
-    cin >> end_word;
-    
-    for (char& c : begin_word) c = tolower(c);
-    for (char& c : end_word) c = tolower(c);
-    
-    vector<string> ladder = generate_word_ladder(begin_word, end_word, word_list);
-    print_word_ladder(ladder);
-    
-    return 0;
 }
